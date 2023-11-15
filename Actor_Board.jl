@@ -1,7 +1,11 @@
 include("Actor.jl")
+include("ValueIter.jl")
+
 using LinearAlgebra
 using Plots
 using Gtk
+
+println("------------------ NEW RUN ------------------")
 
 function createMap1()
     map = zeros(12,12)
@@ -22,8 +26,16 @@ function createMap1()
 end
 
 map = Board([12,12], createMap1())
+
 global prey = Actor([2, 2], "Prey", [1], [[2, 2]], 1:5, map)
 global predator = Actor([11, 11], "Predator", [1], [[11, 11]], 1:5, map)
+
+Problem = MDP(0.9, 1:144, 1:5, generate_T(map, prey), 0, 0)
+Val = ValueIteration(50)
+
+testing = solve(Val, Problem, map)
+
+# generate_T(map, prey)
 
 function draw(predator::Actor, prey::Actor, board::Board)
     data = copy(board.layout)
@@ -49,20 +61,25 @@ draw(predator, prey, map)
 while true
 
     # wait for keypress
-    sleep(.1)
+    # sleep(1)
 
     # get prey move
-    get_next_action(prey, predator)
-    draw(predator, prey, map)
-    println("Prey moved to : $(prey.pos[1]),  $(prey.pos[2])")
+    # get_next_action(prey, predator)
+    # draw(predator, prey, map)
+    # println("Prey moved to : $(prey.pos[1]),  $(prey.pos[2])")
 
     # wait for keypress
-    sleep(.1)
+    sleep(0.5)
 
     # get predator move
-    get_next_action(predator, prey)
+    get_next_action(predator, prey, testing)
     draw(predator, prey, map)
     println("Predator moved to : $(predator.pos[1]),  $(predator.pos[2])")
+
+    if (prey.pos == predator.pos)
+        println("PREDATOR FOUND THE PREY")
+        break
+    end
 end
 
 
