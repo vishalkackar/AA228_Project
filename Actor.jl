@@ -1,5 +1,6 @@
 using Random
 include("Board.jl")
+include("ValueIter.jl")
 
 mutable struct Actor
     pos::Vector
@@ -55,3 +56,57 @@ function get_next_action(a::Actor, adversary::Actor, pol::ValueFunctionPolicy)
     # return curr_pos                 # return the next action
 end
 
+function generate_T(board::Board, actor::Actor)
+    state_size = (board.bounds[1] * board.bounds[2], board.bounds[1] * board.bounds[2])
+    T = zeros(maximum(actor.actions), board.bounds[1] * board.bounds[2], board.bounds[1] * board.bounds[2])
+    for a in actor.actions
+        temp_T = zeros(state_size)
+
+        if a == 1                       # stay in place
+            temp_T = I(state_size[1])
+
+        elseif a == 2                   # move up
+            for i = 1:state_size[1]      # loop through s
+                x,y = state_to_coord(i, board)
+
+                if (board.layout[x,y] == 0) && (x - 1 > 0) && (board.layout[x-1,y] == 0)
+                    temp_T[i, i-board.bounds[1]] = 1
+                end
+            end
+
+        elseif a == 3                   # move down
+            for i = 1:state_size[1]
+                x,y = state_to_coord(i, board)
+
+                if (board.layout[x,y] == 0) && (x + 1 <= board.bounds[1]) && (board.layout[x+1,y] == 0)
+                    temp_T[i, i+board.bounds[1]] = 1
+                end
+            end
+
+        elseif a == 4                   # move left 
+            for i = 1:state_size[1]
+                x,y = state_to_coord(i, board)
+
+                if (board.layout[x,y] == 0) && (y-1 > 0) && (board.layout[x,y-1] == 0)
+                    temp_T[i, i-1] = 1
+                end
+            end
+
+        elseif a == 5                   # move right
+            for i = 1:state_size[1]
+                x,y = state_to_coord(i, board)
+
+                if (board.layout[x,y] == 0) && (y+1 <= board.bounds[2]) && (board.layout[x,y+1] == 0)
+                    temp_T[i, i+1] = 1
+                end
+            end
+        end
+
+        # println("NEW ACTION: ")
+        # println(temp_T)
+        T[a,:,:] = temp_T
+
+    end
+
+    return T
+end
