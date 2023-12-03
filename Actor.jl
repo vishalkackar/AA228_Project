@@ -67,36 +67,36 @@ function generate_T(board::Board, actor::Actor)
 
         elseif a == 2                   # move up
             for i = 1:state_size[1]      # loop through s
-                x,y = state_to_coord(i, board)
+                row,col = state_to_coord(i, board)
 
-                if (board.layout[x,y] == 0) && (x - 1 > 0) && (board.layout[x-1,y] == 0)
+                if (board.layout[row,col] == 0) && (row - 1 > 0) && (board.layout[row-1,col] == 0)
                     temp_T[i, i-board.bounds[1]] = 1
                 end
             end
 
         elseif a == 3                   # move down
             for i = 1:state_size[1]
-                x,y = state_to_coord(i, board)
+                row,col = state_to_coord(i, board)
 
-                if (board.layout[x,y] == 0) && (x + 1 <= board.bounds[1]) && (board.layout[x+1,y] == 0)
+                if (board.layout[row,col] == 0) && (row + 1 <= board.bounds[1]) && (board.layout[row+1,col] == 0)
                     temp_T[i, i+board.bounds[1]] = 1
                 end
             end
 
         elseif a == 4                   # move left 
             for i = 1:state_size[1]
-                x,y = state_to_coord(i, board)
+                row,col = state_to_coord(i, board)
 
-                if (board.layout[x,y] == 0) && (y-1 > 0) && (board.layout[x,y-1] == 0)
+                if (board.layout[row,col] == 0) && (col-1 > 0) && (board.layout[row,col-1] == 0)
                     temp_T[i, i-1] = 1
                 end
             end
 
         elseif a == 5                   # move right
             for i = 1:state_size[1]
-                x,y = state_to_coord(i, board)
+                row,col = state_to_coord(i, board)
 
-                if (board.layout[x,y] == 0) && (y+1 <= board.bounds[2]) && (board.layout[x,y+1] == 0)
+                if (board.layout[row,col] == 0) && (col+1 <= board.bounds[2]) && (board.layout[row,col+1] == 0)
                     temp_T[i, i+1] = 1
                 end
             end

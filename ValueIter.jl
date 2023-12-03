@@ -50,50 +50,50 @@ function backup(P::MDP, U, s, board::Board)
 end
 
 function state_to_coord(s, board::Board)
-    x = Integer(floor(s/board.bounds[1]) + 1)
-    y = s%board.bounds[1]
+    row= Integer(floor(s/board.bounds[1]) + 1)
+    col= s%board.bounds[1]
 
-    if x == 13
-        x = 12
+    if row== 13
+        row = board.bounds[1]
     end
 
-    if y == 0
-        y = 12
+    if col == 0
+        col = board.bounds[2]
     end
 
-    return x,y
+    return row,col
 end
 
-function coord_to_state(x, y, board::Board)
-    return board.bounds[1] * (x-1) + y
+function coord_to_state(row, col, board::Board)
+    return board.bounds[1] * (row-1) + col
 end
 
 function Reward_Func(s, a, board::Board)
     # assume prey is stationary at 2,2
-    x,y = state_to_coord(s, board)
-    dist = abs(x - 2) + abs(y - 2)
+    row,col= state_to_coord(s, board)
+    dist = abs(row - 2) + abs(col - 2)
     new_dist = dist
 
     # distance doesn't change if we stay
 
     if a == 2           # up
-        if ((x - 1 > 0) && board.layout[x-1, y] == 0)
-            new_dist = abs(x - 1 - 2) + abs(y - 2)
+        if ((row - 1 > 0) && board.layout[row-1, col] == 0)
+            new_dist = abs(row - 1 - 2) + abs(col- 2)
         end
 
     elseif a == 3       # down
-        if (x + 1 <= board.bounds[1]) && (board.layout[x+1, y] == 0)
-            new_dist = abs(x + 1 - 2) + abs(y - 2)
+        if (row + 1 <= board.bounds[1]) && (board.layout[row+1, col] == 0)
+            new_dist = abs(row + 1 - 2) + abs(col- 2)
         end
 
     elseif a == 4       # left
-        if (y-1 > 0) && (board.layout[x, y-1] == 0)
-            new_dist = abs(x - 2) + abs(y - 1 - 2)
+        if (col-1 > 0) && (board.layout[row, col-1] == 0)
+            new_dist = abs(row - 2) + abs(col- 1 - 2)
         end
 
     elseif a == 5       # right
-        if (y+1 <= board.bounds[2]) && (board.layout[x, y+1] == 0)
-            new_dist = abs(x - 2) + abs(y + 1 - 2)
+        if (col+1 <= board.bounds[2]) && (board.layout[row, col+1] == 0)
+            new_dist = abs(row - 2) + abs(col+ 1 - 2)
         end
     end
     
