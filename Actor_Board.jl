@@ -1,4 +1,5 @@
 include("Actor.jl")
+include("ValueIter.jl")
 
 using LinearAlgebra
 using Plots
@@ -8,15 +9,18 @@ println("------------------ NEW RUN ------------------")
 
 
 
-map = Board([12,12], createMap2())
+map = Board([12,12], createMap1())
 
-global prey = Actor([2, 2], "Prey", [1], [[2, 2]], 1:5, map)
-global predator = Actor([11, 11], "Predator", [1], [[11, 11]], 1:5, map)
+prey_start_pos = [4,9]
+pred_start_pos = [2,2]
 
-Problem = MDP(0.9, 1:144, 1:5, generate_T(map, prey), 0, 0)
-Val = ValueIteration(50)
+global prey = Actor(prey_start_pos, "Prey", [1], [[2, 2]], 1:5, map, pred_start_pos)
+global predator = Actor(pred_start_pos, "Predator", [1], [[11, 11]], 1:5, map, prey_start_pos)
 
-testing = solve(Val, Problem, map)
+max_state = map.bounds[1] * map.bounds[2]
+Problem = MDP(0.9, 1:max_state, 1:5, generate_T(map, prey), 0, 0)
+
+global valIterSolution = solve(ValueIteration(50), Problem, map, predator.ad_coords)
 
 function draw(predator::Actor, prey::Actor, board::Board)
     data = copy(board.layout)
@@ -54,7 +58,13 @@ while true
     sleep(0.5)
 
     # get predator move
-    get_next_action(predator, prey, testing)
+    if test_vision(prey, predator, map.layout)
+        println("I HAVE VISION!------------------------------------------------")
+        predator.ad_coords = prey.pos
+        global valIterSolution = solve(ValueIteration(50), Problem, map, predator.ad_coords)
+    end
+
+    get_next_action(predator, valIterSolution, prey.pos)
     draw(predator, prey, map)
     println("Predator moved to : $(predator.pos[1]),  $(predator.pos[2])")
 

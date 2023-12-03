@@ -37,18 +37,37 @@ function createMap2()
     return map
 end
 
-function getWallList(board::Board)
-    map = board.layout
-    numRows = size(map)[1]
-    numCols = size(map)[2]
-    local wallCoords = []
-    for row = 1:numRows
-        for col = 1:numCols
-            if map[row,col] == 1
-                push!(wallCoords,[row,col])
-            end
-        end
+# function getWallList(board::Board)
+#     map = board.layout
+#     numRows = size(map)[1]
+#     numCols = size(map)[2]
+#     local wallCoords = []
+#     for row = 1:numRows
+#         for col = 1:numCols
+#             if map[row,col] == 1
+#                 push!(wallCoords,[row,col])
+#             end
+#         end
+#     end
+
+#     return wallCoords
+# end
+
+function state_to_coord(s, board::Board)
+    row= Integer(floor(s/board.bounds[1]) + 1)
+    col= s%board.bounds[1]
+
+    if row== 13
+        row = board.bounds[1]
     end
 
-    return wallCoords
+    if col == 0
+        col = board.bounds[2]
+    end
+
+    return row,col
+end
+
+function coord_to_state(row, col, board::Board)
+    return board.bounds[1] * (row-1) + col
 end
