@@ -2,7 +2,7 @@ using Random
 include("Board.jl")
 include("ValueIter.jl")
 
-const moveProb = 0.5
+const moveProb = 0.7
 
 
 mutable struct Actor
