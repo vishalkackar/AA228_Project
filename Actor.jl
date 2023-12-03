@@ -2,6 +2,9 @@ using Random
 include("Board.jl")
 include("ValueIter.jl")
 
+const moveProb = 0.5
+
+
 mutable struct Actor
     pos::Vector
     name::String
@@ -19,6 +22,14 @@ function get_next_move(a::Actor, adversary::Actor, pol::ValueFunctionPolicy)
     return next_action
 end
 
+function stochastic_move_success()
+    if rand() <= moveProb
+        return true
+    else
+        println("Failed to move!")
+        return false
+    end
+end
 
 # get the next action
 function get_next_action(a::Actor, adversary::Actor, pol::ValueFunctionPolicy)
@@ -30,17 +41,25 @@ function get_next_action(a::Actor, adversary::Actor, pol::ValueFunctionPolicy)
     if next_action == 1             # stay in place
         curr_pos = curr_pos
     elseif next_action == 2         # move up
-        curr_pos[1] = max(curr_pos[1]-1, 1)
-        println("\tGoing up!")
+        if stochastic_move_success()
+            curr_pos[1] = max(curr_pos[1]-1, 1)
+            println("\tGoing up!")
+        end
     elseif next_action == 3         # move down
-        curr_pos[1] = min(curr_pos[1]+1, a.board.bounds[1])
-        println("\tGoing down!")
+        if stochastic_move_success()
+            curr_pos[1] = min(curr_pos[1]+1, a.board.bounds[1])
+            println("\tGoing down!")
+        end
     elseif next_action == 4         # move left
-        curr_pos[2] = max(curr_pos[2]-1, 1)
-        println("\tGoing left!")
+        if stochastic_move_success()    
+            curr_pos[2] = max(curr_pos[2]-1, 1)
+            println("\tGoing left!")
+        end
     elseif next_action == 5         # move right
-        curr_pos[2] = min(curr_pos[2]+1, a.board.bounds[2])
-        println("\tGoing right!")
+        if stochastic_move_success()
+            curr_pos[2] = min(curr_pos[2]+1, a.board.bounds[2])
+            println("\tGoing right!")
+        end
     end
 
     # check if potential action leads to an obstacle
@@ -70,7 +89,8 @@ function generate_T(board::Board, actor::Actor)
                 row,col = state_to_coord(i, board)
 
                 if (board.layout[row,col] == 0) && (row - 1 > 0) && (board.layout[row-1,col] == 0)
-                    temp_T[i, i-board.bounds[1]] = 1
+                    temp_T[i, i-board.bounds[1]] = moveProb
+                    temp_T[i, i] = 1-moveProb
                 end
             end
 
@@ -79,7 +99,8 @@ function generate_T(board::Board, actor::Actor)
                 row,col = state_to_coord(i, board)
 
                 if (board.layout[row,col] == 0) && (row + 1 <= board.bounds[1]) && (board.layout[row+1,col] == 0)
-                    temp_T[i, i+board.bounds[1]] = 1
+                    temp_T[i, i+board.bounds[1]] = moveProb
+                    temp_T[i, i] =  1-moveProb
                 end
             end
 
@@ -88,7 +109,8 @@ function generate_T(board::Board, actor::Actor)
                 row,col = state_to_coord(i, board)
 
                 if (board.layout[row,col] == 0) && (col-1 > 0) && (board.layout[row,col-1] == 0)
-                    temp_T[i, i-1] = 1
+                    temp_T[i, i-1] = moveProb
+                    temp_T[i, i] =  1-moveProb
                 end
             end
 
@@ -97,7 +119,8 @@ function generate_T(board::Board, actor::Actor)
                 row,col = state_to_coord(i, board)
 
                 if (board.layout[row,col] == 0) && (col+1 <= board.bounds[2]) && (board.layout[row,col+1] == 0)
-                    temp_T[i, i+1] = 1
+                    temp_T[i, i+1] = moveProb
+                    temp_T[i, i] =  1-moveProb
                 end
             end
         end
