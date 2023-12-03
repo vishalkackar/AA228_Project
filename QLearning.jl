@@ -15,4 +15,13 @@ function update!(model::QLearning, s, a, r, sp)
     return model
 end
 
+function simulate(P::MDP, model, pol, h, s)
+    for i in 1:h
+        a = pol(model, s)
+        sp, r = P.TR(s, a)
+        update!(model, s, a, r, sp)
+        s = sp
+    end
+end
+
 

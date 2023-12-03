@@ -88,11 +88,11 @@ end
 #   map - coordinates of walls in map (walls must == 1)
 # function test_vision(x0, y0, x1, y1, map)
 function test_vision(prey::Actor, pred::Actor, map)
-    x0 = prey.pos[2]
-    y0 = prey.pos[1]
+    x0 = prey.pos[1]
+    y0 = prey.pos[2]
 
-    x1 = pred.pos[2]
-    y1 = pred.pos[1]
+    x1 = pred.pos[1]
+    y1 = pred.pos[2]
 
     returnVal = true
     dx = abs(x1 - x0)

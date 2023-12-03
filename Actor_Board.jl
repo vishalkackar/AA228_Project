@@ -55,7 +55,7 @@ while true
     println("Prey moved to : $(prey.pos[1]),  $(prey.pos[2])")
 
     # wait for keypress
-    sleep(0.5)
+    sleep(0.1)
 
     # get predator move
     if test_vision(prey, predator, map.layout)
