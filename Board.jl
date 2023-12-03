@@ -36,3 +36,19 @@ function createMap2()
 
     return map
 end
+
+function getWallList(board::Board)
+    map = board.layout
+    numRows = size(map)[1]
+    numCols = size(map)[2]
+    local wallCoords = []
+    for row = 1:numRows
+        for col = 1:numCols
+            if map[row,col] == 1
+                push!(wallCoords,[row,col])
+            end
+        end
+    end
+
+    return wallCoords
+end

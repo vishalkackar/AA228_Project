@@ -1,4 +1,3 @@
-# include("Actor.jl")
 include("Board.jl")
 using LinearAlgebra
 
@@ -70,7 +69,7 @@ end
 
 function Reward_Func(s, a, board::Board)
     # assume prey is stationary at 2,2
-    row,col= state_to_coord(s, board)
+    row,col = state_to_coord(s, board)
     dist = abs(row - 2) + abs(col - 2)
     new_dist = dist
 

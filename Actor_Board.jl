@@ -18,8 +18,6 @@ Val = ValueIteration(50)
 
 testing = solve(Val, Problem, map)
 
-# generate_T(map, prey)
-
 function draw(predator::Actor, prey::Actor, board::Board)
     data = copy(board.layout)
     data[predator.pos[1], predator.pos[2]] = 0.25          # predator
@@ -48,8 +46,9 @@ while true
 
     # get prey move
     # get_next_action(prey, predator)
-    # draw(predator, prey, map)
-    # println("Prey moved to : $(prey.pos[1]),  $(prey.pos[2])")
+    get_prey_move(prey, predator)
+    draw(predator, prey, map)
+    println("Prey moved to : $(prey.pos[1]),  $(prey.pos[2])")
 
     # wait for keypress
     sleep(0.5)
