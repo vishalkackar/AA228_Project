@@ -64,7 +64,7 @@ function get_prey_move(prey::Actor, pred::Actor)
             right_dist = abs(row - pred.pos[1]) + abs(col+1 - pred.pos[2])
         end
 
-        distances = [curr_dist, up_dist, down_dist, left_dist, right_dist]
+        distances = [curr_dist-1, up_dist, down_dist, left_dist, right_dist]
         i = argmax(distances)
         coords = [[row,col], [row-1,col], [row+1,col], [row,col-1], [row,col+1]]
 

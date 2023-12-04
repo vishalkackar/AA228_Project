@@ -9,7 +9,7 @@ println("------------------ NEW RUN ------------------")
 
 global seesPrey = false
 
-map = Board([12,12], createMap1())
+map = Board([12,12], createMap2())
 
 prey_start_pos = [4,9]
 pred_start_pos = [2,2]

@@ -26,9 +26,9 @@ end
 lookahead(model::QLearning, s, a) = model.Q[s,a]
 
 function Reward_Func(s, a, board::Board, coords)
-    # assume prey is stationary at 2,2
     preyRow = coords[1]
     preyCol = coords[2]
+    # println(coords)
 
     row,col = state_to_coord(s, board)
     dist = abs(row - preyRow) + abs(col - preyCol)
@@ -68,7 +68,7 @@ function(TR)(s, a, board::Board, coords)
 
     row, col = state_to_coord(s, board)
 
-    if rand() < moveProb
+    if rand() > moveProb
         sp = s
     else
         if (a == 1)             # stay in place
@@ -77,15 +77,15 @@ function(TR)(s, a, board::Board, coords)
             if ( (row - 1 > 0) && (board.layout[row-1, col] == 0) )
                 sp = coord_to_state(row-1, col, board)
             end
-        elseif (a == 3)     # down
+        elseif (a == 3)         # down
             if ( (row + 1 <= board.bounds[1]) && (board.layout[row+1, col] == 0) )
                 sp = coord_to_state(row+1, col, board)
             end
-        elseif (a == 4)     # left
+        elseif (a == 4)         # left
             if ( (col - 1 > 0) && (board.layout[row, col-1] == 0) )
                 sp = coord_to_state(row, col-1, board)
             end
-        else # a == 5       # right
+        else # a == 5           # right
             if ( (col + 1 <= board.bounds[2]) && (board.layout[row, col+1] == 0) )
                 sp = coord_to_state(row, col+1, board)
             end
@@ -93,6 +93,11 @@ function(TR)(s, a, board::Board, coords)
     end
 
     r = Reward_Func(sp, a, board, coords)
+
+    # if (a == 1)
+    #     println("dosihf adkjf")
+    #     r = -10
+    # end
 
     return sp, r
 end
@@ -116,6 +121,9 @@ end
 function simulate(P::MDP, model, π, h, s, board::Board,coords)
     for i in 1:h
         a = π(model, s) #right
+        # if 1 == a
+        #     println("simulate says to stay")
+        # end
         sp, r = P.TR(s, a, board, coords) #next state, reward = current state, a = right #T[a,s,sp]
         update!(model, s, a, r, sp)
         s = sp
@@ -125,6 +133,15 @@ end
 
 function get_Q_action(Q, s, pred::Actor, coords)
     next_action = argmax(Q[s,:])
+
+    if (next_action == 1)
+        # seesPrey = true
+        model.Q = zeros((length(Problem.S), length(Problem.A)))
+        Q[:, 1] .= -5
+    end
+
+    # println("\t$(Q[s,:])")
+    # println("\taction = $next_action")
 
     curr_pos = copy(pred.pos)          # get the current position of the specified actor
 

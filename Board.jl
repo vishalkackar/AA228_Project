@@ -1,5 +1,5 @@
 const moveProb = 0.9
-const preyMoveProb = 0.8
+const preyMoveProb = 0.7
 
 mutable struct Board
     bounds::Vector
