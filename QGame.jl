@@ -48,7 +48,7 @@ function draw(predator::Actor, prey::Actor, board::Board, seesPrey)
 end
 
 
-draw(predator, prey, map)
+draw(predator, prey, map, seesPrey)
 
 while true
 
