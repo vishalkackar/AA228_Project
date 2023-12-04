@@ -1,9 +1,6 @@
 using Random
 include("Board.jl")
 
-const moveProb = 0.9
-const preyMoveProb = 0.8
-
 mutable struct Actor
     pos::Vector
     name::String
