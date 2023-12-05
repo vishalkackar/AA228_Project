@@ -18,6 +18,18 @@ function POMDPs.stateindex(pomdp::TagPOMDP, s::GameState)
     return state_idx
 end
 
+function POMDPs.initialstate(pomdp::TagPOMDP)
+    num_s = num_squares(pomdp.map)
+    probs = normalize(ones(num_s * num_s), 1)
+    states = Vector{TagState}(undef, num_s * num_s)
+    for ii in 1:(num_s * num_s)
+        states[ii] = state_from_index(pomdp, ii)
+    end
+    return SparseCat(states, probs)
+end
+
+POMDPs.states(pomdp::TagPOMDP) = pomdp
+
 function Base.iterate(pomdp::TagPOMDP, ii::Int=1)
     if ii > length(pomdp)
         return nothing
