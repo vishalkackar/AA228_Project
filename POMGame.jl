@@ -3,7 +3,6 @@ using POMDPTools: Deterministic, Uniform, SparseCat, BeliefUpdaters
 using POMDPs
 using POMDPModels
 
-
 include("Actor.jl")
 # include("RewardFunc.jl")
 
@@ -18,6 +17,7 @@ include("Actor.jl")
 #     TRO # sample transition, reward, and observation
 # end
 
+
 ######################################### SETUP GAME #######################################
 const size = 12
 global map = Board([12,12], createMap2())
@@ -30,7 +30,7 @@ global predator = Actor(pred_start_pos, "Predator", [1], [[11, 11]], 1:5, map, p
 global seesPrey = false
 
 max_state = map.bounds[1] * map.bounds[2]
-Problem = MDP(0.8, 1:max_state, 1:5, 0, 0, TR)
+# Problem = MDP(0.8, 1:max_state, 1:5, 0, 0, TR)
 
 global T = generate_T(map, prey)
 
@@ -41,11 +41,13 @@ global T = generate_T(map, prey)
 
 ####################################### define POMDP #######################################
 m = QuickPOMDP(
-    states = 1:144,         # 12 x 12 grid
-    actions = 1:5,          # jump, up, down, left, right
-    observations = 1:144,   # one for each cell
+    states = 1:max_state,           # 12 x 12 grid
+    actions = 1:5,                  # jump, up, down, left, right
+    observations = 1:max_state,     # one for each cell
     discount = 0.9, 
-    transition = function(s, a) # stochastic transition function (precomputed)
+    transition = function(s, a)     # stochastic transition function (precomputed)
+        # maybe separate states from predator coords?
+        # state is now the belief where the prey is
         row, col = state_to_coord(s, map)
         sp = s
 
@@ -73,15 +75,16 @@ m = QuickPOMDP(
     observation = function(a, sp)
         if test_vision(prey, predator, map)     # if we have LOS, perfect observation of the prey
             valid_states = coord_to_state(prey.pos[1], prey.pos[2], map)
-            valid_probs = 1.0 # guarantee 
+            valid_probs = 1.0                   # guarantee 
 
-        else # otherwise, assign observation distribution to region of prey
+        else            # otherwise, assign observation distribution to region of prey based on action
             if a == 1   # if we jump, get a distribution around the actual prey location
                 row = prey.pos[1]
                 col = prey.pos[2]
 
                 # all possible neighboring cells
-                neighbor_cells = [[row, col], [row+1, col], [row, col+1], [row-1, col], [row, col-1]]
+                #                   jump            up          down        left            right
+                neighbor_cells = [[row, col], [row-1, col], [row+1, col], [row, col-1], [row, col+1]]
                 valid_cells = []
                 
                 for cell in neighbor_cells
@@ -104,8 +107,8 @@ m = QuickPOMDP(
                 valid_probs[1] = 0.8 + 0.05*(5 - num_valid)
                 valid_probs[2,:] .= 0.05
 
-            else        # if do not jump, then assume uniform distribution
-                valid_states = 1:144
+            else        # if do not jump, then assume uniform distribution over all states
+                valid_states = 1:max_state
                 valid_probs = Uniform(valid_states)
             end
         end
@@ -122,6 +125,30 @@ m = QuickPOMDP(
     
     reward = function(s, a, sp)
         return Reward_Func(s, a, map, predator.ad_coords)
+    end,
+
+    actions = function(b)
+        # need to make this a function of predator coords, not belief?
+        # possible actions are dependent on where on the map the predator is
+
+        row = predator.pos[1]
+        col = predator.pos[2]
+
+        #                   jump        up              down        left            right
+        neighbor_cells = [[row, col], [row-1, col], [row+1, col], [row, col-1], [row, col+1]]
+        total_actions = 1:5
+        valid_cells = []
+        valid_actions = []
+
+        for cell in neighbor_cells
+            # make sure cell is within bounds and not a wall
+            if ( (cell[1] > 0 && cell[1] < size) && (cell[1] > 0 && cell[1] < size) && (map.layout[cell[1]][cell[2]] == 0) )
+                push!(valid_cells, cell)
+                #push!(valid_actions, a)
+            end
+        end
+
+        return valid_actions
     end,
 
     initial_state = SparseCat(coord_to_state(prey.pos[1], prey.pos[2], map), 1.0)
