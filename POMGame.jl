@@ -31,8 +31,8 @@ Problem = MDP(0.8, 1:max_state, 1:5, 0, 0, TR)
 
 global T = generate_T(map, prey)
 
-init_prob = zeros(144)
-init_prob[coord_to_state(prey.pos[1], prey.pos[2], map)] = 1
+# init_prob = zeros(144)
+# init_prob[coord_to_state(prey.pos[1], prey.pos[2], map)] = 1
 
 # define POMDP
 m = QuickPOMDP(
@@ -49,16 +49,20 @@ m = QuickPOMDP(
         elseif a == 2       # up
             sp = coord_to_state(row-1, col, map)
         elseif a == 3       # down
-            sp = state_coord(row+1, col, map)
+            sp = coord_to_state(row+1, col, map)
         elseif a == 4       # left
-            sp = state_coord(row, col-1, map)
+            sp = coord_to_state(row, col-1, map)
         elseif a == 5       # right
-            sp = state_coord(row, col+1, map)
+            sp = coord_to_state(row, col+1, map)
         end
 
         # return T[a,s,sp]
-        # return SparseCat([sp, s], [T[a,s,sp], 1-T[a,s,sp]])
-        return SparseCat([1:144], T[a,s,:])
+        if a == 1
+            return SparseCat([s], [1.0])
+        else
+            return SparseCat([sp, s], [T[a,s,sp], 1.0 - T[a,s,sp]])
+        end
+        # return SparseCat([1:144], T[a,s,:])
     end,
 
     observation = function(a, sp)
@@ -67,48 +71,55 @@ m = QuickPOMDP(
             valid_probs = 1.0 # guarantee 
 
         else # otherwise, assign observation distribution to region of prey
-            row = prey.pos[1]
-            col = prey.pos[2]
+            if a == 1   # if we jump, get a distribution around the actual prey location
+                row = prey.pos[1]
+                col = prey.pos[2]
 
-            # all possible neighboring cells
-            neighbor_cells = [[row, col], [row+1, col], [row, col+1], [row-1, col], [row, col-1]]
-            valid_cells = []
-            
-            for cell in neighbor_cells
-                # make sure cell is within bounds and not a wall
-                if ( (cell[1] > 0 && cell[1] < 13) && (cell[1] > 0 && cell[1] < 13) && (map.layout[cell[1]][cell[2]] == 0) )
-                    push!(valid_cells, cell)
+                # all possible neighboring cells
+                neighbor_cells = [[row, col], [row+1, col], [row, col+1], [row-1, col], [row, col-1]]
+                valid_cells = []
+                
+                for cell in neighbor_cells
+                    # make sure cell is within bounds and not a wall
+                    if ( (cell[1] > 0 && cell[1] < 13) && (cell[1] > 0 && cell[1] < 13) && (map.layout[cell[1]][cell[2]] == 0) )
+                        push!(valid_cells, cell)
+                    end
                 end
-            end
 
-            num_valid = length(valid_cells)
+                num_valid = length(valid_cells)
 
-            # convert row,col to state
-            valid_states = zeros(num_valid)
-            for cell in valid_cells
-                push!(valid_states, coord_to_state(cell[1], cell[2], map))
+                # convert row,col to state
+                valid_states = zeros(num_valid)
+                for cell in valid_cells
+                    push!(valid_states, coord_to_state(cell[1], cell[2], map))
+                end
+                
+                # assign base 0.8 prob to prey position and 0.05 to neighboring cells
+                valid_probs = zeros(num_valid)
+                valid_probs[1] = 0.8 + 0.05*(5 - num_valid)
+                valid_probs[2,:] .= 0.05
+
+            else        # if do not jump, then assume uniform distribution
+                valid_states = 1:144
+                valid_probs = Uniform(valid_states)
             end
-            
-            # assign base 0.8 prob to prey position and 0.05 to neighboring cells
-            valid_probs = zeros(num_valid)
-            valid_probs[1] = 0.8 + 0.05*(5 - num_valid)
-            valid_probs[2,:] .= 0.05
         end
 
         # assign probablities to entire grid
-        total_probs = zeros(144)
-        for s in 1:num_valid
-            total_probs[valid_states[s]] = valid_probs[s]
-        end
+        # total_probs = zeros(144)
+        # for s in 1:num_valid
+        #     total_probs[valid_states[s]] = valid_probs[s]
+        # end
 
-        return SparseCat(1:144, total_probs)
+        # return SparseCat(1:144, total_probs)
+        return SparseCat(valid_states, valid_probs)
     end,
     
     reward = function(s, a, sp)
         return Reward_Func(s, a, map, predator.ad_coords)
     end,
 
-    initial_state = SparseCat(1:144, init_prob)
+    initial_state = SparseCat(coord_to_state(prey.pos[1], prey.pos[2], map), 1.0)
 )
 
 function generate_T(board::Board, actor::Actor)
