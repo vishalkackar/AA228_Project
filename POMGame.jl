@@ -1,8 +1,11 @@
 using QuickPOMDPs: QuickPOMDP
-using POMDPTools: Deterministic, Uniform, SparseCat
+using POMDPTools: Deterministic, Uniform, SparseCat, BeliefUpdaters
+using POMDPs
+using POMDPModels
+
 
 include("Actor.jl")
-include("RewardFunc.jl")
+# include("RewardFunc.jl")
 
 # struct POMDP
 #     γ # discount factor
@@ -15,7 +18,7 @@ include("RewardFunc.jl")
 #     TRO # sample transition, reward, and observation
 # end
 
-######################################### SETUP GAME #######################################3
+######################################### SETUP GAME #######################################
 const size = 12
 global map = Board([12,12], createMap2())
 
@@ -33,8 +36,10 @@ global T = generate_T(map, prey)
 
 # init_prob = zeros(144)
 # init_prob[coord_to_state(prey.pos[1], prey.pos[2], map)] = 1
+##################################################################################
 
-# define POMDP
+
+####################################### define POMDP #######################################
 m = QuickPOMDP(
     states = 1:144,         # 12 x 12 grid
     actions = 1:5,          # jump, up, down, left, right
@@ -121,7 +126,41 @@ m = QuickPOMDP(
 
     initial_state = SparseCat(coord_to_state(prey.pos[1], prey.pos[2], map), 1.0)
 )
+#####################################################################################################################
 
+
+####################################### Belief Updater and Solver #######################################
+bayesian = DiscreteUpdater(m)
+
+struct MonteCarloGreedySolver <: Solver
+    num_samples::Int
+end
+
+struct MonteCarloGreedyPlanner{M} <: Policy
+    m::M
+    num_samples::Int
+end
+
+POMDPs.solve(sol::MonteCarloGreedySolver, m) = MonteCarloGreedyPlanner(m, sol.num_samples)
+
+function POMDPs.action(p::MonteCarloGreedyPlanner{<:POMDP}, b)
+    best_reward = -Inf
+    local best_action
+    for a in actions(p.m)
+        s = rand(b)
+        reward_sum = sum(@gen(:r)(p.m, s, a) for _ in 1:p.num_samples)
+        if reward_sum >= best_reward
+            best_reward = reward_sum
+            best_action = a
+        end
+    end
+    return best_action
+end
+#####################################################################################################################
+
+
+####################################### Helper functions #######################################
+# ------------------------------------- T -------------------------------------
 function generate_T(board::Board, actor::Actor)
     state_size = (board.bounds[1] * board.bounds[2], board.bounds[1] * board.bounds[2])
     T = zeros(maximum(actor.actions), board.bounds[1] * board.bounds[2], board.bounds[1] * board.bounds[2])
@@ -180,7 +219,10 @@ function generate_T(board::Board, actor::Actor)
 
     return T
 end
+# ---------------------------------------------------------------------------------------------------------------
 
+
+# ------------------------------------- Reward Function -------------------------------------
 function Reward_Func(s, a, board::Board, coords)
     # assume prey is stationary at 2,2
     preyRow = coords[1]
@@ -216,8 +258,10 @@ function Reward_Func(s, a, board::Board, coords)
     return 10 * (dist - new_dist)
 
 end
+# ---------------------------------------------------------------------------------------------------------------
 
 
+# ------------------------------------- draw the board -------------------------------------
 function draw(predator::Actor, prey::Actor, board::Board, seesPrey)
     data = copy(board.layout)
     if seesPrey
@@ -230,3 +274,4 @@ function draw(predator::Actor, prey::Actor, board::Board, seesPrey)
     h = heatmap(1:size(data,1), 1:size(data,2), data, yflip = true,c=cgrad([:white, :red, :orange, :blue, :black]), aspect_ratio=:equal)
     display(h)
 end
+# ---------------------------------------------------------------------------------------------------------------
