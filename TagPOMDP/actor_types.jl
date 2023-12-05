@@ -81,7 +81,7 @@ end
 Returns a `TagPOMDP <: POMDP{TagState, Int, Int}`.
 
 """
-function TagPOMDP(;game_map::Map = Map(), discount_factor::Float64 = 0.9, tag_reward::UInt16 = 1000)
+function TagPOMDP(;game_map::Map = Map(), discount_factor::Float64 = 0.9, tag_reward::UInt16 = 500)
     return TagPOMDP(
         map = game_map,
         discount_factor = discount_factor,
