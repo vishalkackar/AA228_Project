@@ -71,6 +71,7 @@ struct TagPOMDP <: POMDP{GameState, Int, Int}
     map::Map
     discount_factor::Float64
     tag_reward::UInt16
+    move_away_prob::Float64
 end
 
 
@@ -81,11 +82,12 @@ end
 Returns a `TagPOMDP <: POMDP{TagState, Int, Int}`.
 
 """
-function TagPOMDP(;game_map::Map = Map(), discount_factor::Float64 = 0.9, tag_reward::UInt16 = 500)
+function TagPOMDP(;game_map::Map = Map(), discount_factor::Float64 = 0.9, tag_reward::UInt16 = 500, move_away_prob = 0.8)
     return TagPOMDP(
         map = game_map,
         discount_factor = discount_factor,
-        tag_reward = tag_reward
+        tag_reward = tag_reward,
+        move_away_prob = move_away_prob
     )
 end
 
