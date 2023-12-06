@@ -67,7 +67,7 @@ function Map()
 end
 
 
-struct TagPOMDP <: POMDP{GameState, Int, Int}
+struct TagPOMDP2 <: POMDP{GameState, Int, Int}
     map::Map
     discount_factor::Float64
     tag_reward::UInt16
@@ -82,8 +82,8 @@ end
 Returns a `TagPOMDP <: POMDP{TagState, Int, Int}`.
 
 """
-function TagPOMDP(;game_map::Map = Map(), discount_factor::Float64 = 0.9, tag_reward::UInt16 = 500, move_away_prob = 0.8)
-    return TagPOMDP(
+function TagPOMDP2(;game_map::Map = Map(), discount_factor::Float64 = 0.9, tag_reward::UInt16 = 500, move_away_prob = 0.8)
+    return TagPOMDP2(
         map = game_map,
         discount_factor = discount_factor,
         tag_reward = tag_reward,
@@ -91,6 +91,7 @@ function TagPOMDP(;game_map::Map = Map(), discount_factor::Float64 = 0.9, tag_re
     )
 end
 
-Base.length(pomdp::TagPOMDP) = grid.numRows * grid.numCols * grid.numRows * grid.numCols
-POMDPs.discount(pomdp::TagPOMDP) = pomdp.discount_factor
+Base.length(pomdp::TagPOMDP2) = grid.numRows * grid.numCols * grid.numRows * grid.numCols
+POMDPs.discount(pomdp::TagPOMDP2) = pomdp.discount_factor
 num_squares(grid::Map) = grid.numRows * grid.numCols
+POMDPs.isterminal(pomdp::TagPOMDP2, s::GameState) = s.pred_pos == s.prey_pos

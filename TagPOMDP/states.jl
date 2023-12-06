@@ -1,4 +1,4 @@
-function POMDPs.stateindex(pomdp::TagPOMDP, s::GameState)
+function POMDPs.stateindex(pomdp::TagPOMDP2, s::GameState)
     # total # of states is 144 x 144 because we have 144 possible prey positions given a predator position
     # there are 144 possible predator positions
 
@@ -18,7 +18,7 @@ function POMDPs.stateindex(pomdp::TagPOMDP, s::GameState)
     return state_idx
 end
 
-function POMDPs.initialstate(pomdp::TagPOMDP)
+function POMDPs.initialstate(pomdp::TagPOMDP2)
     num_s = num_squares(pomdp.map)
     probs = normalize(ones(num_s * num_s), 1)
     states = Vector{TagState}(undef, num_s * num_s)
@@ -28,9 +28,9 @@ function POMDPs.initialstate(pomdp::TagPOMDP)
     return SparseCat(states, probs)
 end
 
-POMDPs.states(pomdp::TagPOMDP) = pomdp
+POMDPs.states(pomdp::TagPOMDP2) = pomdp
 
-function Base.iterate(pomdp::TagPOMDP, ii::Int=1)
+function Base.iterate(pomdp::TagPOMDP2, ii::Int=1)
     if ii > length(pomdp)
         return nothing
     end
@@ -38,7 +38,7 @@ function Base.iterate(pomdp::TagPOMDP, ii::Int=1)
     return (s, ii + 1)
 end
 
-function state_from_index(pomdp::TagPOMDP, si::Int)
+function state_from_index(pomdp::TagPOMDP2, si::Int)
     # convert the state into predator and prey linear indices
     pred_lin = trunc(Int, (si-1)/(pomdp.map.numRows * pomdp.map.numCols)) + 1
     prey_lin = si - (pomdp.map.numRows * pomdp.map.numCols) * (pred_lin-1)

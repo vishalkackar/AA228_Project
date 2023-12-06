@@ -3,15 +3,15 @@
 
 Transition function for the TagPOMDP. This transition is mimics the original paper.
 """
-function POMDPs.transition(pomdp::TagPOMDP, s::GameState, a::Int)
+function POMDPs.transition(pomdp::TagPOMDP2, s::GameState, a::Int)
     # Check if tagged first. If so, stay put and flip to tagged=true state
-    if a == ACTIONS_DICT[:tag]
-        if s.r_pos == s.t_pos
-            return Deterministic(pomdp.terminal_state)
-        end
-    end
+    # if a == ACTIONS_DICT[:tag]
+    #     if s.pred_pos == s.prey_pos
+    #         return Deterministic(pomdp.terminal_state)
+    #     end
+    # end
 
-    return transition_function(pomdp::TagPOMDP, s::GameState, a::Int)
+    return transition_function(pomdp::TagPOMDP2, s::GameState, a::Int)
 end
 
 
@@ -20,7 +20,7 @@ Transition function for the TagPOMDP. This transition is mimics the original pap
     implementation is structured to be closely aligned with the modified transition
     function.
 """
-function transition_function(pomdp::TagPOMDP, s::GameState, a::Int)
+function transition_function(pomdp::TagPOMDP2, s::GameState, a::Int)
     pred_row, pred_col = s.pred_pos
     prey_row, prey_col = s.prey_pos
     grid = pomdp.map

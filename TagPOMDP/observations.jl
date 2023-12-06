@@ -1,10 +1,10 @@
 # using POMDPs
 # include("actor_types.jl")
 
-POMDPs.observations(pomdp::TagPOMDP) = 1:(num_squares(pomdp.map))
-POMDPs.obsindex(pomdp::TagPOMDP, o::Int) = o
+POMDPs.observations(pomdp::TagPOMDP2) = 1:(num_squares(pomdp.map))
+POMDPs.obsindex(pomdp::TagPOMDP2, o::Int) = o
 
-function POMDPs.observation(pomdp::TagPOMDP, a::Int, sp::GameState)
+function POMDPs.observation(pomdp::TagPOMDP2, a::Int, sp::GameState)
     obs = observations(pomdp)
     probs = zeros(length(obs))
     
@@ -33,7 +33,7 @@ function POMDPs.observation(pomdp::TagPOMDP, a::Int, sp::GameState)
     return SparseCat(obs, probs)
 end
 
-function has_vision(pomdp::TagPOMDP, sp::GameState)
+function has_vision(pomdp::TagPOMDP2, sp::GameState)
     returnVal = true
 
     # check vision here
@@ -76,7 +76,7 @@ function has_vision(pomdp::TagPOMDP, sp::GameState)
     return returnVal
 end
 
-function surrounding_cells(pomdp::TagPOMDP, sp::GameState)
+function surrounding_cells(pomdp::TagPOMDP2, sp::GameState)
     p = sp.prey_pos
 
     probs = zeros(5)
@@ -89,7 +89,7 @@ function surrounding_cells(pomdp::TagPOMDP, sp::GameState)
             probs[i] = 1                    # set the probability of that cell to 1
         end
     end
-    probs .* 0.05                           # give all valid cells a default value of 0.05
+    probs = probs .* 0.05                   # give all valid cells a default value of 0.05
 
     probs[1] = 0.8 + 0.05*(5 - num_valid)   # give the coord of the prey the highest prob (sums to 1)
     return probs

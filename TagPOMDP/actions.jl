@@ -5,5 +5,5 @@ const ACTION_INEQ = Dict(:north => >=, :east => >=, :south => <=, :west => <=)
 const ACTION_NAMES = Dict(1 => "Jump", 2 => "North", 3 => "South", 4 => "East", 5 => "West")
 const ACTION_DIRS = [(0,0), (-1, 0), (1, 0), (0, 1), (0, -1)]
 
-POMDPs.actions(pomdp::TagPOMDP) = 1:length(ACTIONS_DICT)
-POMDPs.actionindex(POMDP::TagPOMDP, a::Int) = a
+POMDPs.actions(pomdp::TagPOMDP2) = 1:length(ACTIONS_DICT)
+POMDPs.actionindex(POMDP::TagPOMDP2, a::Int) = a
