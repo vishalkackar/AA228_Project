@@ -11,11 +11,11 @@ function POMDPs.observation(pomdp::TagPOMDP2, a::Int, sp::GameState)
     if a == 1   # choose to jump
         valid_coords, surrounding_probs = surrounding_cells(pomdp, sp)
 
-        # for (i,n) in enumerate(valid_coords)
-        #     probs[pomdp.map.full_grid_lin_indices[n[1], n[2]]] = surrounding_probs[i]
-        # end
+        for (i,n) in enumerate(valid_coords)
+            probs[pomdp.map.full_grid_lin_indices[n[1], n[2]]] = surrounding_probs[i]
+        end
         
-        probs = ones(length(obs))/length(obs)
+        # probs = ones(length(obs))/length(obs)
 
     else        # normal actions
         if has_vision(pomdp, sp)   # has vision

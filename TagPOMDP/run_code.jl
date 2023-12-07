@@ -22,6 +22,8 @@ include("visualization.jl")
 pomdp = TagPOMDP23()
 
 solver = SARSOPSolver(; timeout=60)
+# POMCP for online
+# adaops for online
 policy = solve(solver, pomdp)
 
 sim = GifSimulator(filename="test.gif", max_steps=50)
