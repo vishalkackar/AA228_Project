@@ -1,5 +1,5 @@
 """
-    POMDPs.transition(pomdp::TagPOMDP, s::TagState, a::Int)
+    POMDPs.transition(pomdp::TagPOMDP, s::GameState, a::Int)
 
 Transition function for the TagPOMDP. This transition is mimics the original paper.
 """
@@ -16,7 +16,7 @@ end
 
 
 """
-Transition function for the TagPOMDP. This transition is mimics the original paper.
+Transition function for the TagPOMDP2. This transition is mimics the original paper.
     implementation is structured to be closely aligned with the modified transition
     function.
 """
@@ -63,25 +63,33 @@ function transition_function(pomdp::TagPOMDP2, s::GameState, a::Int)
     ns_moves = cnt_ns_options - cnt_wall_hits_ns
     ew_moves = cnt_ew_options - cnt_wall_hits_ew
 
-    ns_prob = pomdp.move_away_probability / 2 / cnt_ns_options
-    ew_prob = pomdp.move_away_probability / 2 / cnt_ew_options
+    ns_prob = pomdp.move_away_prob / 2 / cnt_ns_options
+    ew_prob = pomdp.move_away_prob / 2 / cnt_ew_options
 
     # Create the transition probability array
-    t_probs = ones(length(t_move_pos_options))
+    t_probs = ones(length(t_move_pos_options) + 1)
     t_probs[1:ew_moves] .= ew_prob
     t_probs[ew_moves+1:ew_moves+ns_moves] .= ns_prob
 
     push!(t_move_pos_options, s.prey_pos)
-    t_probs[end] = 1.0 - sum(t_probs[1:end-1]) # ?????
+    t_probs[end] = 1.0 - sum(t_probs[1:end-1])
+
+
+
+    # push!(t_move_pos_options, s.prey_pos)
+    # t_probs[end] = 1.0 - sum(t_probs[1:end-1]) # ?????
 
     # PREDATOR
     # Predator position is deterministic
-    pred_pos′ = move_direction(pomdp.tag_grid, s.pred_pos, ACTION_DIRS[a])
+    pred_pos′ = move_direction(pomdp.map, s.pred_pos, ACTION_DIRS[a])
 
     states = Vector{GameState}(undef, length(t_move_pos_options))
     for (ii, t_pos′) in enumerate(t_move_pos_options)
         states[ii] = GameState(pred_pos′, t_pos′)
     end
+    # println("in transition")
+    # println(length(states))
+    # println(length(t_probs))
     return SparseCat(states, t_probs)
 end
 
@@ -100,12 +108,11 @@ function hit_wall(grid::Map, p::Tuple{Int, Int}, d::Tuple{Int, Int})
     p′ = p .+ d
 
     # bounds checking
-    if p′[1] > grid.numRows || p′[1] < 0 || p′[2] > grid.numCols || p′[2] < 0
+    if p′[1] > grid.numRows || p′[1] <= 0 || p′[2] > grid.numCols || p′[2] <= 0
         returnVal = true
-    end
     
     # collision checking
-    if grid.tag_grid[p′[1], p′[2]] == 1   
+    elseif grid.tag_grid[p′[1], p′[2]] == 1   
         returnVal = true
     end
 

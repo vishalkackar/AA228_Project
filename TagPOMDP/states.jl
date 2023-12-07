@@ -10,7 +10,7 @@ function POMDPs.stateindex(pomdp::TagPOMDP2, s::GameState)
     # pred_lin = (pred_coords[2] - 1) * pomdp.map.numRows + pred_coords[1]
     # prey_lin = (prey_coords[2] - 1) * pomdp.map.numRows + prey_coords[1]
     pred_lin = pomdp.map.full_grid_lin_indices[pred_coords[1], pred_coords[2]]
-    pred_lin = pomdp.map.full_grid_lin_indices[prey_coords[1], prey_coords[2]]
+    prey_lin = pomdp.map.full_grid_lin_indices[prey_coords[1], prey_coords[2]]
 
     # convert linear index to state index
     state_idx = (pred_lin - 1) * (pomdp.map.numRows * pomdp.map.numCols) + prey_lin
@@ -19,12 +19,27 @@ function POMDPs.stateindex(pomdp::TagPOMDP2, s::GameState)
 end
 
 function POMDPs.initialstate(pomdp::TagPOMDP2)
-    num_s = num_squares(pomdp.map)
-    probs = normalize(ones(num_s * num_s), 1)
-    states = Vector{TagState}(undef, num_s * num_s)
-    for ii in 1:(num_s * num_s)
-        states[ii] = state_from_index(pomdp, ii)
-    end
+    # change to just be one init state?
+    # hard code:
+    #           pred = 11,6
+    #           prey = 4,3
+    # states = [8380]
+    # probs = [1]
+
+    # num_s = num_squares(pomdp.map)
+    # probs = normalize(ones(num_s * num_s), 1)
+    # states = Vector{GameState}(undef, num_s * num_s)
+    # for ii in 1:(num_s * num_s)
+    #     states[ii] = state_from_index(pomdp, ii)
+    # end
+    # println("initial")
+    # println(length(states))
+    # println(length(probs))
+
+
+    states = [GameState((1,1), (mapSize,mapSize))]
+    probs = [1]
+    
     return SparseCat(states, probs)
 end
 
@@ -44,12 +59,12 @@ function state_from_index(pomdp::TagPOMDP2, si::Int)
     prey_lin = si - (pomdp.map.numRows * pomdp.map.numCols) * (pred_lin-1)
 
     # convert linear indices into cartesian coords
-    pred_coord = pompd.map.full_grid_cart_indices[pred_lin]
+    pred_coord = pomdp.map.full_grid_cart_indices[pred_lin]
     prey_coord = pomdp.map.full_grid_cart_indices[prey_lin]
 
-    # return GameState struct
     return GameState(
-        pred_pos = pred_coord,
-        prey_pos = prey_coord
+        Tuple(pred_coord),
+        Tuple(prey_coord)
     )
+
 end

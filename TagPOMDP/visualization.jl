@@ -1,4 +1,4 @@
-function POMDPTools.render(pomdp::TagPOMDP, step; pre_act_text::String="")
+function POMDPTools.render(pomdp::TagPOMDP2, step; pre_act_text::String="")
 
     plt = nothing
     plotted_robot = false
@@ -12,12 +12,12 @@ function POMDPTools.render(pomdp::TagPOMDP, step; pre_act_text::String="")
 
     if !isnothing(get(step, :s, nothing))
         offset = (0.0, 0.0)
-        if step.s.t_pos == step.s.r_pos
+        if step.s.prey_pos == step.s.pred_pos
             offset = (0.0, 0.1)
         end
-        plt = plot_robot!(plt, step.s.t_pos .+ offset; color=RGB(0.8, 0.1, 0.1))
+        plt = plot_robot!(plt, step.s.prey_pos .+ offset; color=RGB(0.8, 0.1, 0.1))
         if !plotted_robot
-            plt = plot_robot!(plt, step.s.r_pos)
+            plt = plot_robot!(plt, step.s.pred_pos)
         end
     end
 
@@ -25,7 +25,8 @@ function POMDPTools.render(pomdp::TagPOMDP, step; pre_act_text::String="")
         # Determine appropriate font size based on plot size
         px_p_tick = px_per_tick(plt)
         fnt_size = Int(floor(px_p_tick / 2 / 1.3333333))
-        xc = pomdp.tag_grid.bottom_grid[1] / 2
+        # xc = pomdp.tag_grid.bottom_grid[1] / 2
+        xc = 0.0
         yc = 0.0
         action_text = pre_act_text * "a = $(ACTION_NAMES[step.a])"
         plt = annotate!(plt, xc, yc, (text(action_text, :black, :center, fnt_size)))
@@ -35,50 +36,52 @@ function POMDPTools.render(pomdp::TagPOMDP, step; pre_act_text::String="")
 
 end
 
-function plot_tag(pomdp::TagPOMDP)
+function plot_tag(pomdp::TagPOMDP2)
     state_list = [sᵢ for sᵢ in pomdp]
     b = zeros(length(pomdp) - 1)
     return plot_tag(pomdp, b, state_list[1:end-1])
 end
-function plot_tag(pomdp::TagPOMDP, b::SparseVector)
+function plot_tag(pomdp::TagPOMDP2, b::SparseVector)
     return plot_tag(pomdp, collect(b))
 end
-function plot_tag(pomdp::TagPOMDP, b::Vector{Float64})
+function plot_tag(pomdp::TagPOMDP2, b::Vector{Float64})
     state_list = [sᵢ for sᵢ in pomdp]
     if length(b) == length(state_list)
         return plot_tag(pomdp, b[1:end-1], state_list[1:end-1])
     end
     return plot_tag(pomdp, b, state_list[1:end])
 end
-function plot_tag(pomdp::TagPOMDP, b::DiscreteBelief)
+function plot_tag(pomdp::TagPOMDP2, b::DiscreteBelief)
     return plot_tag(pomdp, b.b[1:end-1], b.state_list[1:end-1])
 end
-function plot_tag(pomdp::TagPOMDP, b::SparseCat)
+function plot_tag(pomdp::TagPOMDP2, b::SparseCat)
     return plot_tag(pomdp, b.probs, b.vals)
 end
 
-function plot_tag(pomdp::TagPOMDP, b::Vector, state_list::Vector{GameState};
+function plot_tag(pomdp::TagPOMDP2, b::Vector, state_list::Vector{GameState};
     color_grad=cgrad(:Greens_9),
     prob_color_scale=1.0,
 )
-    grid = pomdp.tag_grid
+    grid = pomdp.map
     num_cells = num_squares(grid)
 
     # Get the belief of the robot and the target in each cell
     grid_t_b = zeros(num_cells)
     grid_r_b = zeros(num_cells)
     for (ii, sᵢ) in enumerate(state_list)
-        tpi = pos_cart_to_linear(grid, sᵢ.t_pos)
-        rpi = pos_cart_to_linear(grid, sᵢ.r_pos)
+        # tpi = pos_cart_to_linear(grid, sᵢ.prey_pos)
+        # rpi = pos_cart_to_linear(grid, sᵢ.pred_pos)
+        tpi = pomdp.map.full_grid_lin_indices[sᵢ.prey_pos[1], sᵢ.prey_pos[2]]
+        rpi = pomdp.map.full_grid_lin_indices[sᵢ.pred_pos[1], sᵢ.pred_pos[2]]
         grid_t_b[tpi] += b[ii]
         grid_r_b[rpi] += b[ii]
     end
 
     plt = plot(; legend=false, ticks=false, showaxis=false, grid=false, aspectratio=:equal)
 
-    for xi in 1:grid.bottom_grid[1]
-        plt = plot!(plt, rect(0.5, 0.5, xi, 0); linecolor=RGB(1.0, 1.0, 1.0), color=:white)
-    end
+    # for xi in 1:grid.bottom_grid[1]
+    #     plt = plot!(plt, rect(0.5, 0.5, xi, 0); linecolor=RGB(1.0, 1.0, 1.0), color=:white)
+    # end
 
     # Plot the grid
     for cell_i in 1:num_cells
@@ -88,7 +91,12 @@ function plot_tag(pomdp::TagPOMDP, b::Vector, state_list::Vector{GameState};
         else
             color = get(color_grad, color_scale)
         end
-        xi, yi = pos_lin_to_cart(grid, cell_i)
+        # xi, yi = pos_lin_to_cart(grid, cell_i)
+        # print(cell_i)
+        # print(pomdp.map.full_grid_cart_indices[1])
+        xi = pomdp.map.full_grid_cart_indices[cell_i][1]
+        yi = pomdp.map.full_grid_cart_indices[cell_i][2]
+        
         plt = plot!(plt, rect(0.5, 0.5, xi, yi); color=color)
     end
 
@@ -98,7 +106,9 @@ function plot_tag(pomdp::TagPOMDP, b::Vector, state_list::Vector{GameState};
 
     # Plot the robot (tranparancy based on belief) and annotate the target belief as well
     for cell_i in 1:num_cells
-        xi, yi = pos_lin_to_cart(grid, cell_i)
+        # xi, yi = pos_lin_to_cart(grid, cell_i)
+        xi = pomdp.map.full_grid_cart_indices[cell_i][1]
+        yi = pomdp.map.full_grid_cart_indices[cell_i][2]
         prob_text = round(grid_t_b[cell_i]; digits=2)
         if prob_text < 0.01
             prob_text = ""
@@ -108,6 +118,15 @@ function plot_tag(pomdp::TagPOMDP, b::Vector, state_list::Vector{GameState};
             plt = plot_robot!(plt, (xi, yi); fillalpha=grid_r_b[cell_i])
         end
     end
+
+    for cell_i in 1:num_cells
+        row = pomdp.map.full_grid_cart_indices[cell_i][1]
+        col = pomdp.map.full_grid_cart_indices[cell_i][2]
+        if (pomdp.map.tag_grid[row, col] == 1)
+            plt = plot!(plt, rect(0.5, 0.5, row, col); color = :black)
+        end
+    end
+
     return plt
 end
 

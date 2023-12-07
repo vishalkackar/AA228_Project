@@ -9,23 +9,30 @@ function POMDPs.observation(pomdp::TagPOMDP2, a::Int, sp::GameState)
     probs = zeros(length(obs))
     
     if a == 1   # choose to jump
-        surrounding_probs = surrounding_cells(pomdp, sp)
+        valid_coords, surrounding_probs = surrounding_cells(pomdp, sp)
 
-        for (i,n) in enumerate(ACTION_DIRS) # loop through actions
-            p = sp.prey_pos .+ n            # get the candidate point
+        # for (i,n) in enumerate(ACTION_DIRS) # loop through actions
+        #     p = sp.prey_pos .+ n            # get the candidate point
             
-            # set the corresp value in probs to the calculated probability
-            probs[pomdp.map.full_grid_cart_indices[p[1], p[2]]] = surrounding_probs[i]
+        #     # set the corresp value in probs to the calculated probability
+        #     probs[pomdp.map.full_grid_cart_indices[p[1], p[2]]] = surrounding_probs[i]
+        # end
+
+        for (i,n) in enumerate(valid_coords)
+            probs[pomdp.map.full_grid_lin_indices[n[1], n[2]]] = surrounding_probs[i]
         end
         
     else        # normal actions
         if has_vision(pomdp, sp)   # has vision
             # get a perfect observation of where the prey is 
             prey_row, prey_col = sp.prey_pos
+            # println("HERERERRE")
             probs[pomdp.map.full_grid_lin_indices[prey_row, prey_col]] = 1
         else            # no observation
+            # println("banana")
             # uniform distribution?
-            probs = Uniform(length(obs))
+            # probs = Uniform(length(obs))
+            probs = ones(length(obs))/length(obs)
         end
     end
 
@@ -51,7 +58,7 @@ function has_vision(pomdp::TagPOMDP2, sp::GameState)
 
     while true
         # Draw pixel at (x0, y0) here
-        if pomdp.map.layout[x0,y0] == 1
+        if pomdp.map.tag_grid[x0,y0] == 1
             # println("LOS broken!")
             returnVal = false
             break
@@ -78,20 +85,25 @@ end
 
 function surrounding_cells(pomdp::TagPOMDP2, sp::GameState)
     p = sp.prey_pos
+    wow = sp.pred_pos
+    # println("In surrounding_cells, prey is at $p")
+    # println("In surrounding_cells, pred is at $wow")
 
-    probs = zeros(5)
+    valid_coords = []
+    probs = []
     num_valid = 0
 
     # iterate through possible neighboring locations
     for (i,n) in enumerate(ACTION_DIRS)
         if !hit_wall(pomdp.map, p, n)       # if valid cell
             num_valid += 1                  # add to count of valid cells
-            probs[i] = 1                    # set the probability of that cell to 1
+            push!(probs, 1)                    # set the probability of that cell to 1
+            push!(valid_coords, p .+ n)
         end
     end
     probs = probs .* 0.05                   # give all valid cells a default value of 0.05
 
     probs[1] = 0.8 + 0.05*(5 - num_valid)   # give the coord of the prey the highest prob (sums to 1)
-    return probs
+    return valid_coords, probs
 
 end
