@@ -53,9 +53,11 @@ function Map()
     layout[2:3,2] .= 1
     layout[2,3] = 1
     layout[5,1:3] .= 1
-    layout[1:3,5] .= 1
+    layout[1:6,5] .= 1
     layout[7,2:3] .= 1
-    layout[5:6,5:6] .= 1
+    # layout[5:6,5:6] .= 1
+    layout[3,1] = 1
+    layout[1,3] = 1
     layout[3,7] = 1
     # layout[3,4:5] .= 1
     

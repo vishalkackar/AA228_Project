@@ -3,8 +3,12 @@ const ROW_DIRS = (:north, :south)
 const ACTIONS_DICT = Dict(:jump => 1, :north => 2, :south => 3, :east => 4, :west => 5)
 const ACTION_INEQ = Dict(:north => >=, :east => >=, :south => <=, :west => <=)
 const ACTION_NAMES = Dict(1 => "Jump", 2 => "North", 3 => "South", 4 => "East", 5 => "West")
-const ACTION_DIRS = [(0,0), (-1, 0), (1, 0), (0, 1), (0, -1)]
-# const ACTION_DIRS = [(0,0), (0, 1), (0, -1), (1, 0), (-1, 0)]
+# const ACTION_DIRS = [(0,0), (-1, 0), (1, 0), (0, 1), (0, -1)]
+const ACTION_DIRS = [(0,0), (0, 1), (0, -1), (1, 0), (-1, 0)]
+
+function man_dist(state::GameState)
+    return abs(state.pred_pos[1] - state.prey_pos[1]) + abs(state.pred_pos[2] - state.prey_pos[2])
+end
 
 POMDPs.actions(pomdp::TagPOMDP2) = 1:length(ACTIONS_DICT)
 POMDPs.actionindex(POMDP::TagPOMDP2, a::Int) = a

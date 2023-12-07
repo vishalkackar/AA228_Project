@@ -34,7 +34,7 @@ function transition_function(pomdp::TagPOMDP2, s::GameState, a::Int)
 
     # PREY
     # Look for viable moves for the prey to move "away" from the predator
-    for card_d_i in COL_DIRS
+    for card_d_i in ROW_DIRS
         if ACTION_INEQ[card_d_i](prey_col, pred_col)
             cnt_ew_options += 1
             d_i = ACTION_DIRS[ACTIONS_DICT[card_d_i]]
@@ -45,7 +45,7 @@ function transition_function(pomdp::TagPOMDP2, s::GameState, a::Int)
             end
         end
     end
-    for card_d_i in ROW_DIRS
+    for card_d_i in COL_DIRS
         if ACTION_INEQ[card_d_i](prey_row, pred_row)
             cnt_ns_options += 1 
             d_i = ACTION_DIRS[ACTIONS_DICT[card_d_i]]

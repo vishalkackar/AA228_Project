@@ -37,7 +37,7 @@ function POMDPs.initialstate(pomdp::TagPOMDP2)
     # println(length(probs))
 
 
-    states = [GameState((1,1), (mapSize,mapSize))]
+    states = [GameState((1,1), (6,4))]
     probs = [1]
     
     return SparseCat(states, probs)
