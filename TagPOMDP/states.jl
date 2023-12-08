@@ -37,18 +37,18 @@ function POMDPs.initialstate(pomdp::TagPOMDP2)
     # println(length(probs))
 
 
-    # states = [GameState((1,1), (6,4))]
-    # probs = [1]
+    states = [GameState((1,1), (6,4))]
+    probs = [1]
 
-    states = []
-    for r in 1:pomdp.map.numRows
-        for c in 1:pomdp.map.numCols
-            if (pomdp.map.tag_grid[r,c] == 0)
-                push!(states, GameState((1,1), (r,c))) # ???
-            end
-        end
-    end
-    probs = ones(length(states))/length(states)
+    # states = []
+    # for r in 1:pomdp.map.numRows
+    #     for c in 1:pomdp.map.numCols
+    #         if (pomdp.map.tag_grid[r,c] == 0)
+    #             push!(states, GameState((1,1), (r,c))) # ???
+    #         end
+    #     end
+    # end
+    # probs = ones(length(states))/length(states)
     
     return SparseCat(states, probs)
 end

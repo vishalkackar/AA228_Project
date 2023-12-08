@@ -6,6 +6,12 @@ function POMDPs.reward(pomdp::TagPOMDP2, s::GameState, a::Int)
     # otherwise reward is inversely proportional to manhattan distance
     else
         manhattan_dist = abs(s.pred_pos[1] - s.prey_pos[1]) + abs(s.pred_pos[2] - s.prey_pos[2])
-        return -5 * manhattan_dist
+
+        if a == 1
+            return -30
+        else
+            return -5 * manhattan_dist
+        end
+        
     end
 end
