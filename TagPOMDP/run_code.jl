@@ -1,14 +1,14 @@
 using POMDPs
-# using TagPOMDPProblem2
-# include("TagPOMDPProblem.jl")
+using POMDPTools
+
 using SARSOP # load a  POMDP Solver
+using QMDP
 using POMDPGifs # to make gifs
 using LinearAlgebra
 using POMDPTools
 using Plots
 using SparseArrays
 
-# export TagPOMDP2, Map, GameState
 
 include("actor_types.jl")
 include("states.jl")
@@ -19,22 +19,32 @@ include("reward.jl")
 include("visualization.jl")
 
 
-pomdp = TagPOMDP23()
+whichMap = 1
+#creat pomdps with different maps
+if whichMap == 1
+    pomdp = TagPOMDP2_1()
+elseif whichMap == 2
+    pomdp = TagPOMDP2_2()
+elseif whichMap == 3
+    pomdp = TagPOMDP2_3()
+end
+# pomdp = TagPOMDP2_1()
+# pomdp = TagPOMDP2_2()
+# pomdp = TagPOMDP2_3()
 
-solver = SARSOPSolver(; timeout=60)
-# POMCP for online
-# adaops for online
-policy = solve(solver, pomdp)
+#create different solvers
+solver_sarsop = SARSOPSolver(timeout=60,policy_filename="sarsopPolicy.out")
+solver_qmdp = QMDPSolver(; max_iterations=60)
 
-sim = GifSimulator(filename="test.gif", max_steps=50)
-# bel0 = zeros(16*16)
-# bel0[16] = 1
+#get different policies using different solvers
+# policy_sarsop = solve(solver_sarsop, pomdp)
+# policy_sarsop = load_policy(pomdp,"sarsopPolicy.out")
 
-# bel0 = GameState((1,1), (4,4))
-# prob0 = 1
-# p = SparseCat(bel0, prob0)
+policy_qmdp = solve(solver_qmdp,pomdp)
 
-simulate(sim, pomdp, policy)
-# simulate(sim, pomdp, policy, s0=SparseCat(1:256, bel0))
-# simulate(sim, pomdp, policy,initialstate(pomdp),8380)
-#simulate(sim=sim,m=pomdp,p=policy,s0=GameState((1,1),(4,4)))
+
+#simulate results
+
+sim = GifSimulator(filename="test.gif", max_steps=50) 
+# simulate(sim, pomdp, policy_sarsop) 
+simulate(sim, pomdp, policy_qmdp) 

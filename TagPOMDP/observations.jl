@@ -5,6 +5,34 @@ POMDPs.observations(pomdp::TagPOMDP2) = 1:(num_squares(pomdp.map))
 POMDPs.obsindex(pomdp::TagPOMDP2, o::Int) = o
 
 function POMDPs.observation(pomdp::TagPOMDP2, a::Int, sp::GameState)
+    # obs = observations(pomdp)
+    # probs = zeros(length(obs))
+    
+    # if a == 1   # choose to jump
+    #     valid_coords, surrounding_probs = surrounding_cells(pomdp, sp)
+
+    #     for (i,n) in enumerate(valid_coords)
+    #         probs[pomdp.map.full_grid_lin_indices[n[1], n[2]]] = surrounding_probs[i]
+    #     end
+        
+    #     # probs = ones(length(obs))/length(obs)
+
+    # else        # normal actions
+    #     if has_vision(pomdp, sp)   # has vision
+    #         # get a perfect observation of where the prey is 
+    #         prey_row, prey_col = sp.prey_pos
+    #         probs[pomdp.map.full_grid_lin_indices[prey_row, prey_col]] = 1
+    #     else            # no observation
+    #         probs = ones(length(obs))/length(obs)
+    #     end
+    # end
+
+
+    # return SparseCat(obs, probs)
+    return observation_function(pomdp::TagPOMDP2, a::Int, sp::GameState)
+end
+
+function observation_function(pomdp::TagPOMDP2, a::Int, sp::GameState)
     obs = observations(pomdp)
     probs = zeros(length(obs))
     
@@ -21,18 +49,15 @@ function POMDPs.observation(pomdp::TagPOMDP2, a::Int, sp::GameState)
         if has_vision(pomdp, sp)   # has vision
             # get a perfect observation of where the prey is 
             prey_row, prey_col = sp.prey_pos
-            # println("HERERERRE")
             probs[pomdp.map.full_grid_lin_indices[prey_row, prey_col]] = 1
         else            # no observation
-            # println("banana")
-            # uniform distribution?
-            # probs = Uniform(length(obs))
             probs = ones(length(obs))/length(obs)
         end
     end
 
 
     return SparseCat(obs, probs)
+
 end
 
 function has_vision(pomdp::TagPOMDP2, sp::GameState)
@@ -80,9 +105,6 @@ end
 
 function surrounding_cells(pomdp::TagPOMDP2, sp::GameState)
     p = sp.prey_pos
-    wow = sp.pred_pos
-    # println("In surrounding_cells, prey is at $p")
-    # println("In surrounding_cells, pred is at $wow")
 
     valid_coords = []
     probs = []
@@ -92,7 +114,7 @@ function surrounding_cells(pomdp::TagPOMDP2, sp::GameState)
     for (i,n) in enumerate(ACTION_DIRS)
         if !hit_wall(pomdp.map, p, n)       # if valid cell
             num_valid += 1                  # add to count of valid cells
-            push!(probs, 1)                    # set the probability of that cell to 1
+            push!(probs, 1)                 # set the probability of that cell to 1
             push!(valid_coords, p .+ n)
         end
     end
