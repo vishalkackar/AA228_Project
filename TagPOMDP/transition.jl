@@ -88,10 +88,12 @@ function transition_function(pomdp::TagPOMDP2, s::GameState, a::Int)
     push!(t_move_pos_options, s.prey_pos)
     t_probs[end] = 1.0 - sum(t_probs[1:end-1])
 
-
-
     # push!(t_move_pos_options, s.prey_pos)
     # t_probs[end] = 1.0 - sum(t_probs[1:end-1]) # ?????
+
+
+
+
 
     # PREDATOR
     # Predator position is deterministic
@@ -101,6 +103,20 @@ function transition_function(pomdp::TagPOMDP2, s::GameState, a::Int)
     for (ii, t_pos′) in enumerate(t_move_pos_options)
         states[ii] = GameState(pred_pos′, t_pos′)
     end
+
+    # Reweight probabilities to favor moving out of sight
+    divisor = 1.0 # current probs must sum to 1
+    additional = 10.0
+    for (idx, p) in enumerate(t_move_pos_options)
+        if !has_vision(pomdp, GameState(pred_pos′, p)) 
+            t_probs[idx] += additional
+            divisor += additional
+        end
+    end
+    if divisor > 1.0
+        t_probs ./= divisor
+    end
+
     # println("in transition")
     # println(length(states))
     # println(length(t_probs))
@@ -132,3 +148,4 @@ function hit_wall(grid::Map, p::Tuple{Int, Int}, d::Tuple{Int, Int})
 
     return returnVal
 end
+

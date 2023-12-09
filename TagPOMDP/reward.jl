@@ -8,7 +8,7 @@ function POMDPs.reward(pomdp::TagPOMDP2, s::GameState, a::Int)
         manhattan_dist = abs(s.pred_pos[1] - s.prey_pos[1]) + abs(s.pred_pos[2] - s.prey_pos[2])
 
         if a == 1
-            return -30
+            return -50
         else
             return -5 * manhattan_dist
         end
