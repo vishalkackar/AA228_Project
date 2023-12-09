@@ -76,9 +76,9 @@ function gatherDataQMDP(numSims)
 
         #simulate
         for i = 1:numSims
-            sim = GifSimulator(filename="QMDPgif.gif", max_steps=50) 
+            sim = GifSimulator(filename="QMDPgif$m.gif", max_steps=50) 
             simulate(sim, pomdp, policy_qmdp) 
-            file = "QMDPgif.gif"
+            file = "QMDPgif$m.gif"
             pgif = load(file)
             data[m,i] = size(pgif)[3]
         end
@@ -115,9 +115,9 @@ function gatherDataSARSOP(numSims)
 
         #simulate
         for i = 1:numSims
-            sim = GifSimulator(filename="SarsopGif.gif", max_steps=50) 
+            sim = GifSimulator(filename="SarsopGif$m.gif", max_steps=50) 
             simulate(sim, pomdp, policy_sarsop) 
-            file = "SarsopGif.gif"
+            file = "SarsopGif$m.gif"
             pgif = load(file)
             data[m,i] = size(pgif)[3]
         end
