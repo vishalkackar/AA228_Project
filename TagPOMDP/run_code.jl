@@ -56,6 +56,7 @@ function gatherDataQMDP(numSims)
     data = zeros(4,numSims)
     timeData = zeros(4)
     for m = 1:4
+        println("Executing map ", m)
         #select the map
         if m == 1
             pomdp = TagPOMDP2_1()
@@ -68,20 +69,31 @@ function gatherDataQMDP(numSims)
         end
 
         #solve the problem
+        println("    Solving...")
         TI = time()
         solver_qmdp = QMDPSolver(; max_iterations=60)
         policy_qmdp = solve(solver_qmdp,pomdp)
         TF = time()
         timeData[m] = TF-TI
+        println("    Done.")
 
         #simulate
         for i = 1:numSims
-            sim = GifSimulator(filename="QMDPgif$m.gif", max_steps=50) 
-            simulate(sim, pomdp, policy_qmdp) 
-            file = "QMDPgif$m.gif"
-            pgif = load(file)
-            data[m,i] = size(pgif)[3]
+            println("    Starting simulation ", i)
+            while true
+                try 
+                    sim = GifSimulator(filename="QMDPgif$m.gif", max_steps=50) 
+                    simulate(sim, pomdp, policy_qmdp) 
+                    file = "QMDPgif$m.gif"
+                    pgif = load(file)
+                    data[m,i] = size(pgif)[3]
+                    break
+                catch
+                    println("    Failure detected! Redo simulation!")
+                end
+            end
         end
+        println("    Done.")
     end
 
     for m = 1:4
@@ -95,6 +107,7 @@ function gatherDataSARSOP(numSims)
     data = zeros(4,numSims)
     timeData = zeros(4)
     for m = 1:4
+        println("Executing map ", m)
         #select the map
         if m == 1
             pomdp = TagPOMDP2_1()
@@ -107,20 +120,31 @@ function gatherDataSARSOP(numSims)
         end
 
         #solve the problem
+        println("    Solving...")
         TI = time()
         solver_sarsop = SARSOPSolver(timeout=60,policy_filename="sarsopPolicy.out")
         policy_sarsop = solve(solver_sarsop, pomdp)
         TF = time()
         timeData[m] = TF-TI
+        println("    Done.")
 
         #simulate
         for i = 1:numSims
-            sim = GifSimulator(filename="SarsopGif$m.gif", max_steps=50) 
-            simulate(sim, pomdp, policy_sarsop) 
-            file = "SarsopGif$m.gif"
-            pgif = load(file)
-            data[m,i] = size(pgif)[3]
+            println("    Starting simulation ", i)
+            while true
+                try
+                    sim = GifSimulator(filename="SarsopGif$m.gif", max_steps=50) 
+                    simulate(sim, pomdp, policy_sarsop) 
+                    file = "SarsopGif$m.gif"
+                    pgif = load(file)
+                    data[m,i] = size(pgif)[3]
+                    break
+                catch
+                    println("    Failure detected! Redo simulation!")
+                end
+            end
         end
+        println("    Done.")
     end
 
     for m = 1:4
